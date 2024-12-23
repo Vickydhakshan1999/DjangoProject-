@@ -1,0 +1,97 @@
+Metadata-Version: 2.1
+Name: django-access-point
+Version: 0.0.32
+Summary: Django Access Point is a package designed to streamline the creation of APIs for user and role management in SaaS projects. It simplifies user authentication, authorization, and role-based access control, enabling developers to build robust and scalable applications with ease. Additionally, this package supports custom fields, allowing users to manage their own specific fields for enhanced flexibility and customization.
+Author: Karthick Sivakumar
+Author-email: karthicksivakumardev@gmail.com
+Description-Content-Type: text/markdown
+Requires-Dist: Django>=3.0.0
+Requires-Dist: django-cors-headers>=4.4.0
+Requires-Dist: djangorestframework>=3.0.0
+Requires-Dist: djangorestframework-simplejwt>=5.3.0
+Requires-Dist: jsonschema>=4.17.0
+Requires-Dist: openpyxl==3.1.5
+
+# Django Access Point
+Django Access Point is a powerful package designed to simplify the creation of APIs for user authentication, role-based access control (RBAC), and user management in SaaS projects. It provides robust features for streamlining the process of building APIs that manage users, roles, and permissions, as well as offering flexible support for custom fields across modules.
+
+This package is ideal for developers looking to implement user and role management, and it also supports custom field management, which means users can configure their own fields for any module without additional code.
+
+**Key Features:**
+- **User Authentication**: Easily manage authentication logic for user accounts.
+- **Role-based Access Control (RBAC)**: Assign roles to users and control access to different modules based on those roles.
+- **CRUD API Generation**: Automatically create full CRUD APIs for models, reducing boilerplate code.
+- **Custom Fields**: Enable users to manage custom fields for each module dynamically.
+
+To learn more about the package and its features, you can refer to the full [Django Access Point documentation](https://django-access-point.readthedocs.io "Django Access Point documentation").
+
+## Steps to Integrate Django Access Point
+**1. Add Package Name To Project Settings**
+- Open your Django project's *settings.py* file.
+- Add the package name `django_access_point` to your project's *INSTALLED_APPS*:
+```
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'django_filters',
+    'django_access_point'
+]
+```
+
+**2. Create Django App Using Django Access Point Package**
+Django Access Point provides a command that automatically generates a Django app complete with user management, role management, and authentication-related files. This allows you to focus on writing code for your business logic rather than spending time on creating APIs for authentication, user, and role management.
+- To create your app, make sure you’re in the same directory as manage.py and run the following command:
+```
+python manage.py createapp userApp
+```
+This command will create a Django app named `userApp` with APIs for authentication, user, and role management.
+
+**3. Add Django App Name To Project Settings**
+- Open your Django project's *settings.py* file.
+- Add the newly created app name `userApp` to your project's *INSTALLED_APPS*:
+```
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'django_filters',
+    'django_access_point',
+    'userApp'
+]
+```
+
+**4. Add AUTH_USER_MODEL to Project Settings**
+Ensure that you define or update the *AUTH_USER_MODEL* to point to the model inheriting from *UserBase*. You can access the model in the path `userApp/models.py`.
+```
+AUTH_USER_MODEL = 'userApp.User'
+```
+*TenantUser* model, provided by extending the Django Access Point package, offers basic fields that manage user management and authentication. You can add your own fields on top of the *TenantUser* model and extend its functionality.
+
+**5. Add TENANT_MODEL to Project Settings**
+Ensure that you define *TENANT_MODEL* to point to the model inheriting from *TenantBase*. You can access the model in the path `userApp/models.py`.
+```
+TENANT_MODEL = 'userApp.Tenant'
+```
+*Tenant* model, provided by extending the Django Access Point package, offers basic fields that manage tenant management. You can add your own fields on top of the *Tenant* model and extend its functionality.
+
+**6. Migrate Models to Database**
+To migrate the newly created app models to the database, use Django's default *makemigrations* and *migrate* commands. Follow these steps:
+- Create Migrations:
+```
+python manage.py makemigrations userApp
+```
+- Apply Migrations
+```
+python manage.py migrate
+```
+
+**7. Update the Project's urls.py**
+- Open your project’s *urls.py* (located in the main project folder, e.g., myproject/urls.py).
+- Import *include* from *django.urls*.
+- Add your app's URL configuration using *include*.
+```
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('userApp.urls')),  # Include your app's URLs
+]
+```
