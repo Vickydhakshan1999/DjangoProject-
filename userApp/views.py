@@ -2,6 +2,7 @@ from cProfile import label
 from fileinput import filename
 import threading
 from urllib import request
+from wsgiref import headers
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
@@ -33,7 +34,10 @@ from userApp.models import UserCustomField
 
 
 
-# logger = logging.getLogger(__name__)
+
+
+
+logger = logging.getLogger(__name__)
 
 class PlatformUser(CrudViewSet, UserProfileMixin):
     queryset = get_user_model().objects.filter(user_type=USER_TYPE_CHOICES[0][0]).exclude(
@@ -116,50 +120,7 @@ class PlatformUser(CrudViewSet, UserProfileMixin):
         # Generate and return the report as an HTTP response
         return report_generator.generate_report()
     
-    
-    
-    # @action(detail=False, methods=['post'], url_path='import-users', parser_classes=[MultiPartParser])
-    # def import_users(self, request, *args, **kwargs):
-    #     """
-    #     Import user data from an uploaded Excel file.
-    #     """
-    #     uploaded_file = request.FILES.get('file')
-    #     if not uploaded_file:
-    #         print("Uploaded files:", request.FILES)
-    #         return Response({"detail": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     def validate_headers(headers):
-    #         required_headers = ["Name", "Email Address", "Phone No"]  
-    #         return all(header in headers for header in required_headers)
-
-    #     def process_row(row):
-    #         name, email, phone_no = row[:3]
-    #         user, _ = get_user_model().objects.update_or_create(
-    #             email=email,
-    #             defaults={
-    #                 "name": name,
-    #                 "phone_no": phone_no,
-    #                 "status": USER_STATUS_CHOICES[1][0],  # Active status
-    #             }
-    #         )
-
-    #     importer = ExcelDataImporter(
-    #         file=uploaded_file,
-    #         validate_headers=validate_headers,
-    #         process_row=process_row
-    #     )
-
-    #     try:
-    #         errors = importer.import_data()
-    #         if errors:
-    #             return Response({"detail": "Import completed with errors.", "errors": errors},
-    #                             status=status.HTTP_400_BAD_REQUEST)
-    #         return Response({"detail": "Import successful."}, status=status.HTTP_200_OK)
-    #     except ValueError as ve:
-    #         return Response({"detail": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
-    #     except Exception as e:
-    #         return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+#  Import Datas from excel sheet 
 
     @action(detail=False, methods=['post'], url_path='import-users', parser_classes=[MultiPartParser])
     def import_users(self, request, *args, **kwargs):
@@ -175,10 +136,12 @@ class PlatformUser(CrudViewSet, UserProfileMixin):
             required_headers = ["Name", "Email Address", "Phone No", "Field Name", "Field Type", "Label", "Value"]
             return all(header in headers for header in required_headers)
 
+
         def process_row(row):
             # Extract user data and custom field data from the row
             name, email, phone_no, field_name, field_type, label, value = row[:7]
 
+            
             # Create or update the user
             user, _ = get_user_model().objects.update_or_create(
                 email=email,
@@ -197,7 +160,7 @@ class PlatformUser(CrudViewSet, UserProfileMixin):
                 slug=field_name,    
                 defaults={
                     'label': label,
-                    'field_type': field_type,  
+                    'field_type': field_type,   
                     'field_order': field_order,     
                 }
             )
@@ -211,6 +174,7 @@ class PlatformUser(CrudViewSet, UserProfileMixin):
                     'checkbox_field': value == 'True' if field_type == 'checkbox' else None,
                     'date_field': value if field_type == 'date' else None,
                     'file_field': value if field_type == 'file' else None,
+                    'multiselect_checkbox_field': value if field_type == 'multiselect_checkbox_field' else None,
                 }
             }
             
